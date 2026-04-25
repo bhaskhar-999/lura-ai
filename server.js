@@ -5,54 +5,54 @@ import express from "express";
 import cors from "cors";
 
 const app = express();
-
 app.use(cors());
 app.use(express.json());
 
-// 🔐 API key from Railway (Environment Variables)
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
-// ✅ Test route (for browser check)
 app.get("/", (req, res) => {
-  res.send("Groq AI backend running 🚀");
+  res.send("Lura AI backend running 🚀");
 });
 
-// ✅ Chat route
 app.post("/chat", async (req, res) => {
   try {
-    const userMessage = req.body.message;
+    if (!GROQ_API_KEY) {
+      return res.status(500).json({ reply: "Missing GROQ_API_KEY on server." });
+    }
+
+    const { message } = req.body;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${GROQ_API_KEY}`
+        Authorization: `Bearer ${GROQ_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "llama3-70b-8192",
-        messages: [
-          { role: "user", content: userMessage }
-        ]
-      })
+        model: "llama-3.1-8b-instant",
+        messages: [{ role: "user", content: message }],
+        temperature: 0.7,
+        max_tokens: 700,
+      }),
     });
 
     const data = await response.json();
 
-    const reply =
-      data?.choices?.[0]?.message?.content ||
-      "No response from AI";
+    if (data.error) {
+      return res.json({ reply: "Groq error: " + data.error.message });
+    }
 
-    res.json({ reply });
-
+    res.json({
+      reply: data.choices?.[0]?.message?.content || "No response from AI.",
+    });
   } catch (error) {
-    console.error("Error:", error);
-    res.json({ reply: "Server error occurred." });
+    console.error(error);
+    res.status(500).json({ reply: "Server error occurred." });
   }
 });
 
-// 🔥 IMPORTANT FOR RAILWAY
 const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT} 🚀`);
+  console.log(`Lura AI backend running on port ${PORT}`);
 });
