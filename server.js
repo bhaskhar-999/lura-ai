@@ -9,14 +9,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// 🔑 API KEY
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
-// 🔥 HEALTH CHECK ROUTE (VERY IMPORTANT)
+// ✅ HEALTH CHECK (VERY IMPORTANT FOR RAILWAY)
 app.get("/", (req, res) => {
-  res.status(200).send("OK");
+  res.send("OK");
 });
 
-// 🔥 Chat route
+// 🤖 CHAT ROUTE
 app.post("/chat", async (req, res) => {
   try {
     const { message } = req.body;
@@ -35,7 +36,9 @@ app.post("/chat", async (req, res) => {
         },
         body: JSON.stringify({
           model: "llama-3.1-8b-instant",
-          messages: [{ role: "user", content: message }],
+          messages: [
+            { role: "user", content: message }
+          ],
         }),
       }
     );
@@ -52,9 +55,9 @@ app.post("/chat", async (req, res) => {
   }
 });
 
-// 🔥 IMPORTANT PORT FIX
+// 🚀 PORT (IMPORTANT)
 const PORT = process.env.PORT || 3001;
 
-app.listen(PORT, "0.0.0.0", () => {
+app.listen(PORT, () => {
   console.log("Server running on port " + PORT);
 });
